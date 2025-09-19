@@ -30,6 +30,8 @@ const googleClientId =
 // Provider
 const provider = new JsonRpcProvider({ url: providerUrl })
 
+console.log(`${window.location.origin}${window.location.pathname}`)
+
 const coreKitInstance = new Web3AuthMPCCoreKit({
   web3AuthClientId,
   web3AuthNetwork: WEB3AUTH_NETWORK.DEVNET,
@@ -37,7 +39,7 @@ const coreKitInstance = new Web3AuthMPCCoreKit({
   manualSync: true,
   tssLib,
   uxMode: 'popup',
-  baseUrl: new URL(import.meta.env.BASE_URL, window.location.origin).href,
+  baseUrl: `${window.location.origin}${window.location.pathname}`,
 })
 
 // eslint-disable-next-line react/prop-types
