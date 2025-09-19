@@ -1,7 +1,16 @@
-/* eslint-disable */
 function getScope() {
   return self.registration.scope
 }
+
+self.addEventListener('install', function () {
+  // Activate worker immediately after installation
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', function (event) {
+  // Become available to all pages under scope without a reload
+  event.waitUntil(self.clients.claim())
+})
 
 self.addEventListener('message', function (event) {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -12,7 +21,9 @@ self.addEventListener('message', function (event) {
 self.addEventListener('fetch', function (event) {
   try {
     const url = new URL(event.request.url)
-    if (url.pathname.includes('redirect') && url.href.includes(getScope())) {
+    // Intercept both redirect and preopen routes used by Web3Auth
+    const isWeb3AuthRoute = url.pathname.includes('redirect') || url.pathname.includes('preopen')
+    if (isWeb3AuthRoute && url.href.includes(getScope())) {
       event.respondWith(
         new Response(
           new Blob(
@@ -241,7 +252,8 @@ self.addEventListener('fetch', function (event) {
               },
               error: error,
             },
-            "http://localhost:3000"
+            // Post back to the actual origin where the app is hosted (works for GitHub Pages too)
+            window.location.origin
           );
         } else {
           // communicate via broadcast channel

@@ -11,9 +11,15 @@
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
+        const base = (window.__vite_base__ || '/').replace(/\/$/, '')
+        const swUrl = `${base}/web3auth.js`.replace('//', '/')
+        const scope = `${base}/`
         navigator.serviceWorker
-          .register('./web3auth.js')
-          .then(() => console.log('SW registered'))
+          .register(swUrl, { scope })
+          .then((reg) => {
+            console.log('SW registered', reg.scope)
+            if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' })
+          })
           .catch((err) => console.error('SW registration failed', err))
       }
     </script>
