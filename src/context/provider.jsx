@@ -37,6 +37,7 @@ const coreKitInstance = new Web3AuthMPCCoreKit({
   manualSync: true,
   tssLib,
   uxMode: 'popup',
+  baseUrl: new URL(import.meta.env.BASE_URL, window.location.origin).href,
 })
 
 // eslint-disable-next-line react/prop-types

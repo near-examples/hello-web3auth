@@ -12,7 +12,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker
-          .register('./sw.js')
+          .register('./web3auth.js')
           .then(() => console.log('SW registered'))
           .catch((err) => console.error('SW registration failed', err))
       }
