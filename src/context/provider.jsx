@@ -1,18 +1,14 @@
 // near api js
 import { JsonRpcProvider } from '@near-js/providers'
 import { Account } from '@near-js/accounts'
-import { Signature, SignedTransaction } from '@near-js/transactions'
 
 // utils
-import { sha256 } from '@noble/hashes/sha2'
-import { hexToBytes } from '@noble/hashes/utils'
 import { base58 } from '@scure/base'
 
 // config
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { NearContext } from './useNear'
-import { bytesToHex } from './utils'
 import { providerUrl } from '../config'
 import { tssLib } from '@toruslabs/tss-frost-lib'
 import {
@@ -20,40 +16,19 @@ import {
   WEB3AUTH_NETWORK,
   COREKIT_STATUS,
 } from '@web3auth/mpc-core-kit'
-import { PublicKey } from '@near-js/crypto'
+import { web3AuthSigner } from './signer'
+import { bytesToHex } from '@noble/hashes/utils'
 
-// Provider
-const provider = new JsonRpcProvider({ url: providerUrl })
-
+// config
 const web3AuthClientId =
   'BMzaHK4oZHNeZeF5tAAHvlznY5H0k1lNs5WynTzE1Uxvr_fVIemzk-90v_hmnRIwFOuU4wbyMqazIvqth60yRRA' // get from https://dashboard.web3auth.io
 const verifier = 'web3auth-test-near'
 const googleClientId =
   '17426988624-32m2gh1o1n5qve6govq04ue91sioruk7.apps.googleusercontent.com'
 
-class web3AuthSigner {
-  constructor(coreKitInstance) {
-    this.coreKitInstance = coreKitInstance
-  }
 
-  getPublicKey() {
-    let web3AuthKey = this.coreKitInstance.getPubKeyEd25519()
-    return new PublicKey({ keyType: 0, data: Uint8Array.from(web3AuthKey) })
-  }
-
-  async signTransaction(transaction) {
-    const encoded = transaction.encode()
-    const txHash = bytesToHex(sha256(encoded))
-    const signatureRaw = await this.coreKitInstance.sign(
-      hexToBytes(txHash.slice(2))
-    )
-    const signature = new Signature({
-      keyType: transaction.publicKey.keyType,
-      data: signatureRaw,
-    })
-    return [[], new SignedTransaction({ transaction, signature })]
-  }
-}
+// Provider
+const provider = new JsonRpcProvider({ url: providerUrl })
 
 const coreKitInstance = new Web3AuthMPCCoreKit({
   web3AuthClientId,
@@ -84,7 +59,7 @@ export function NEARxWeb3Auth({ children }) {
           .getPublicKey()
           .toString()
           .replace('ed25519:', '')
-        const walletId = bytesToHex(base58.decode(publicKey)).slice(2)
+        const walletId = bytesToHex(base58.decode(publicKey))
         const acc = new Account(walletId, provider, signer)
         setWalletId(acc.accountId)
         setNearAccount(acc)
