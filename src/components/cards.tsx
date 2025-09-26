@@ -1,7 +1,8 @@
+import React from 'react'
 import styles from '@/styles/app.module.css'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 
-export const Cards = () => {
+export const Cards: React.FC = () => {
   return (
     <div className={styles.grid}>
       <a
@@ -16,7 +17,7 @@ export const Cards = () => {
         <p>Learn how this application works, and what you can build on Near.</p>
       </a>
 
-      <Link to="/hello-near" className={styles.card} rel="noopener noreferrer">
+      <Link to="/hello-near" className={styles.card}>
         <h2>
           Near Integration <span>-&gt;</span>
         </h2>
