@@ -1,47 +1,60 @@
-import { useEffect, useState } from 'react'
-
+import { useEffect, useState, useCallback } from 'react'
 import { Cards } from '@/components/cards'
 import styles from '@/styles/app.module.css'
-
 import { HelloNearContract } from '@/config'
 import { useNEARxWeb3Auth } from '../context/useNear'
-import { useCallback } from 'react'
+import { JsonRpcProvider } from '@near-js/providers'
+import { Account } from '@near-js/accounts'
 
 // Contract that the app will interact with
 const CONTRACT = HelloNearContract
 
-export default function HelloNear() {
-  const [greeting, setGreeting] = useState('loading...')
-  const [newGreeting, setNewGreeting] = useState('loading...')
-  const [loggedIn, setLoggedIn] = useState(false)
-  const [showSpinner, setShowSpinner] = useState(false)
+export default function HelloNear(): JSX.Element {
+  const [greeting, setGreeting] = useState<string>('loading...')
+  const [newGreeting, setNewGreeting] = useState<string>('loading...')
+  const [loggedIn, setLoggedIn] = useState<boolean>(false)
+  const [showSpinner, setShowSpinner] = useState<boolean>(false)
 
-  const { provider, nearAccount, walletId } = useNEARxWeb3Auth()
+  const { provider, nearAccount, walletId } = useNEARxWeb3Auth() as {
+    provider: JsonRpcProvider
+    nearAccount: Account | null
+    walletId: string | null
+  }
 
   const fetchGreeting = useCallback(async () => {
-    const greeting = await provider.callFunction(CONTRACT, 'get_greeting', {})
-    setGreeting(greeting)
+    if (!provider) return
+    try {
+      const greeting = await provider.callFunction(CONTRACT, 'get_greeting', {})
+      setGreeting(greeting as string)
+    } catch (e) {
+      console.error('Error fetching greeting:', e)
+      setGreeting('Error fetching greeting')
+    }
   }, [provider])
 
   const saveGreeting = async () => {
-    nearAccount
-      .callFunction({
+    if (!nearAccount) {
+      alert('No NEAR account connected')
+      return
+    }
+
+    try {
+      await nearAccount.callFunction({
         contractId: CONTRACT,
         methodName: 'set_greeting',
         args: { greeting: newGreeting },
       })
-      .catch((e) => {
-        alert(
-          `Error, did you deposit any NEAR Ⓝ? You can get some at https://dev.near.org/faucet`
-        )
-        console.log(`Error saving greeting: ${e.message}`)
-        fetchGreeting()
-      })
-
-    setShowSpinner(true)
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    setGreeting(newGreeting)
-    setShowSpinner(false)
+      setShowSpinner(true)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      setGreeting(newGreeting)
+      setShowSpinner(false)
+    } catch (e: any) {
+      alert(
+        `Error, did you deposit any NEAR Ⓝ? You can get some at https://dev.near.org/faucet`
+      )
+      console.error('Error saving greeting:', e?.message ?? e)
+      fetchGreeting()
+    }
   }
 
   useEffect(() => {
@@ -65,6 +78,7 @@ export default function HelloNear() {
         <h1 className="w-100">
           The contract says: <code>{greeting}</code>
         </h1>
+
         <div className="input-group" hidden={!loggedIn}>
           <input
             type="text"
@@ -74,7 +88,7 @@ export default function HelloNear() {
           />
           <div className="input-group-append">
             <button className="btn btn-secondary" onClick={saveGreeting}>
-              <span hidden={showSpinner}> Save </span>
+              <span hidden={showSpinner}>Save</span>
               <i
                 className="spinner-border spinner-border-sm"
                 hidden={!showSpinner}
@@ -82,10 +96,12 @@ export default function HelloNear() {
             </button>
           </div>
         </div>
+
         <div className="w-100 text-end align-text-center" hidden={loggedIn}>
-          <p className="m-0"> Please login to change the greeting </p>
+          <p className="m-0">Please login to change the greeting</p>
         </div>
       </div>
+
       <Cards />
     </main>
   )
