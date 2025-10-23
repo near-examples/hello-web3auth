@@ -14,7 +14,8 @@ export const Navigation = () => {
 
   const { walletId, nearAccount, web3AuthUser, login, logout, loading } =
     useNEARxWeb3Auth()
-
+  console.log(walletId);
+  
   useEffect(() => {
     if (loading) return setLabel('Loading...')
 

@@ -21,10 +21,12 @@ import { bytesToHex } from '@noble/hashes/utils'
 
 // config
 const web3AuthClientId =
-  'BMzaHK4oZHNeZeF5tAAHvlznY5H0k1lNs5WynTzE1Uxvr_fVIemzk-90v_hmnRIwFOuU4wbyMqazIvqth60yRRA' // get from https://dashboard.web3auth.io
-const verifier = 'web3auth-test-near'
+  'BP1rATmBxrPQ5BK0cMry4vmcOXJwYVSElff0dnb3in004j9lFE2SI2QUlC9Sy9lkqVgzussY6QPkOXWocnoJGGI' // get from https://dashboard.web3auth.io
+const verifier = 'near-login' 
+const verifierX = 'near-login-x' // Verifier for X/Twitter
 const googleClientId =
-  '17426988624-32m2gh1o1n5qve6govq04ue91sioruk7.apps.googleusercontent.com'
+  '1088894945876-mfc54okjpbf6pmqakpaab2o6s5e176q9.apps.googleusercontent.com'
+const xClientId = 'YOUR_X_CLIENT_ID' // get from https://developer.x.com/
 
 
 // Provider
@@ -95,6 +97,23 @@ export function NEARxWeb3Auth({ children }) {
     setCoreKitStatus(coreKitInstance.status)
   }
 
+  const loginWithX = async () => {
+    setLoading(true)
+
+    await coreKitInstance.loginWithOAuth({
+      subVerifierDetails: {
+        typeOfLogin: 'jwt',
+        verifier: verifierX,
+        clientId: xClientId,
+      },
+    })
+
+    if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
+      await coreKitInstance.commitChanges() // Needed for new accounts
+    }
+    setCoreKitStatus(coreKitInstance.status)
+  }
+
   const logout = async () => {
     await coreKitInstance.logout()
     setCoreKitStatus(coreKitInstance.status)
@@ -108,6 +127,7 @@ export function NEARxWeb3Auth({ children }) {
         walletId,
         web3AuthUser,
         login,
+        loginWithX,
         logout,
         loading,
       }}
