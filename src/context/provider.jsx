@@ -10,95 +10,51 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { NearContext } from './useNear'
 import { providerUrl } from '../config'
-import { tssLib } from '@toruslabs/tss-frost-lib'
-import {
-  Web3AuthMPCCoreKit,
-  WEB3AUTH_NETWORK,
-  COREKIT_STATUS,
-} from '@web3auth/mpc-core-kit'
-import { web3AuthSigner } from './signer'
-import { bytesToHex } from '@noble/hashes/utils'
-
-// config
-const web3AuthClientId =
-  'BMzaHK4oZHNeZeF5tAAHvlznY5H0k1lNs5WynTzE1Uxvr_fVIemzk-90v_hmnRIwFOuU4wbyMqazIvqth60yRRA' // get from https://dashboard.web3auth.io
-const verifier = 'web3auth-test-near'
-const googleClientId =
-  '17426988624-32m2gh1o1n5qve6govq04ue91sioruk7.apps.googleusercontent.com'
-
+import { useWeb3Auth } from '@web3auth/modal-react-hooks'
+import { KeyPair } from '@near-js/crypto'
+import { KeyPairSigner } from '@near-js/signers'
+import { getED25519Key } from '@web3auth/base-provider'
 
 // Provider
 const provider = new JsonRpcProvider({ url: providerUrl })
 
-console.log(`${window.location.origin}${window.location.pathname}`)
-
-const coreKitInstance = new Web3AuthMPCCoreKit({
-  web3AuthClientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.DEVNET,
-  storage: window.localStorage,
-  manualSync: true,
-  tssLib,
-  uxMode: 'popup',
-  baseUrl: `${window.location.origin}${window.location.pathname}`,
-})
-
 // eslint-disable-next-line react/prop-types
 export function NEARxWeb3Auth({ children }) {
-  const [coreKitStatus, setCoreKitStatus] = useState(
-    COREKIT_STATUS.NOT_INITIALIZED
-  )
   const [walletId, setWalletId] = useState(null)
   const [nearAccount, setNearAccount] = useState(null)
-  const [web3AuthUser, setWeb3AuthUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // Get Web3Auth Modal state - this provides the authenticated session
+  const { isConnected, authenticateUser, userInfo, provider: web3authProvider } = useWeb3Auth()
 
+  // Sync MPC Core Kit with Web3Auth Modal authentication
   useEffect(() => {
-    const init = async () => {
-      await coreKitInstance.init()
-
-      if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
-        const signer = new web3AuthSigner(coreKitInstance)
-        const publicKey = signer
-          .getPublicKey()
-          .toString()
-          .replace('ed25519:', '')
-        const walletId = bytesToHex(base58.decode(publicKey))
-        const acc = new Account(walletId, provider, signer)
-        setWalletId(acc.accountId)
-        setNearAccount(acc)
-        setWeb3AuthUser(coreKitInstance.getUserInfo())
-      } else {
+    const syncAuth = async () => {
+      if (!isConnected) {
         setWalletId(null)
         setNearAccount(null)
-        setWeb3AuthUser(null)
+        setLoading(false)
+        return
       }
 
+      if (!web3authProvider) return;
+
+      const privateKey = await web3authProvider.request({ method: 'private_key' })
+      const privateKeyEd25519 = getED25519Key(privateKey).sk // Already a Uint8Array
+
+      // Create keypair and derive account ID from public key
+      const keyPair = KeyPair.fromString(`ed25519:${base58.encode(privateKeyEd25519)}`);
+      const signer = new KeyPairSigner(keyPair);
+      const accountId = Array.from(keyPair.getPublicKey().data).map(b => b.toString(16).padStart(2, '0')).join('')
+      const account = new Account(accountId, provider, signer);
+      
+      setWalletId(account.accountId)
+      setNearAccount(account)
       setLoading(false)
     }
-    init()
-  }, [coreKitStatus])
 
-  const login = async () => {
-    setLoading(true)
-
-    await coreKitInstance.loginWithOAuth({
-      subVerifierDetails: {
-        typeOfLogin: 'google',
-        verifier,
-        clientId: googleClientId,
-      },
-    })
-
-    if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
-      await coreKitInstance.commitChanges() // Needed for new accounts
-    }
-    setCoreKitStatus(coreKitInstance.status)
-  }
-
-  const logout = async () => {
-    await coreKitInstance.logout()
-    setCoreKitStatus(coreKitInstance.status)
-  }
+    syncAuth()
+  }, [isConnected, authenticateUser, userInfo, web3authProvider])
 
   return (
     <NearContext.Provider
@@ -106,9 +62,6 @@ export function NEARxWeb3Auth({ children }) {
         provider,
         nearAccount,
         walletId,
-        web3AuthUser,
-        login,
-        logout,
         loading,
       }}
     >
