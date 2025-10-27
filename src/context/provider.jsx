@@ -22,11 +22,9 @@ import { bytesToHex } from '@noble/hashes/utils'
 // config
 const web3AuthClientId =
   'BP1rATmBxrPQ5BK0cMry4vmcOXJwYVSElff0dnb3in004j9lFE2SI2QUlC9Sy9lkqVgzussY6QPkOXWocnoJGGI' // get from https://dashboard.web3auth.io
-const verifier = 'near-login' 
-const verifierX = 'near-login-x' // Verifier for X/Twitter
+const verifier = 'near-login'
 const googleClientId =
   '1088894945876-mfc54okjpbf6pmqakpaab2o6s5e176q9.apps.googleusercontent.com'
-const xClientId = 'YOUR_X_CLIENT_ID' // get from https://developer.x.com/
 
 
 // Provider
@@ -90,28 +88,60 @@ export function NEARxWeb3Auth({ children }) {
         clientId: googleClientId,
       },
     })
-
+console.log("holis g", coreKitInstance.status);
     if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
       await coreKitInstance.commitChanges() // Needed for new accounts
     }
     setCoreKitStatus(coreKitInstance.status)
   }
 
-  const loginWithX = async () => {
+  const loginWithJWT = async (idToken, verifierId) => {
+    console.log("login with jwt called", { idToken, verifierId })
+
+    // Check if already logged in or logging in
+    if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
+      console.log("Already logged in, skipping JWT login")
+      return
+    }
+
+    if (coreKitInstance.status === COREKIT_STATUS.REQUIRED_SHARE) {
+      console.log("Login already in progress (REQUIRED_SHARE status)")
+      return
+    }
+
     setLoading(true)
 
-    await coreKitInstance.loginWithOAuth({
-      subVerifierDetails: {
-        typeOfLogin: 'jwt',
-        verifier: verifierX,
-        clientId: xClientId,
-      },
-    })
+    try {
+      const idTokenLoginParams = {
+        verifier,
+        verifierId: verifierId, // Use sub from the parsed token
+        idToken
+      }
 
-    if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
-      await coreKitInstance.commitChanges() // Needed for new accounts
+      console.log("Logging in with ID Token:", idTokenLoginParams)
+
+      await coreKitInstance.loginWithJWT(idTokenLoginParams)
+
+      if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
+        await coreKitInstance.commitChanges() // Needed for new accounts
+      }
+      setCoreKitStatus(coreKitInstance.status)
+    } catch (error) {
+      console.error("login error", error)
+      
+      // If it's a duplicate token error, check if we're actually logged in
+      if (error.message?.includes('Duplicate token')) {
+        if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
+          console.log("Duplicate token but already logged in, continuing...")
+          setCoreKitStatus(coreKitInstance.status)
+          return
+        }
+      }
+      
+      throw error
+    } finally {
+      setLoading(false)
     }
-    setCoreKitStatus(coreKitInstance.status)
   }
 
   const logout = async () => {
@@ -127,7 +157,7 @@ export function NEARxWeb3Auth({ children }) {
         walletId,
         web3AuthUser,
         login,
-        loginWithX,
+        loginWithJWT,
         logout,
         loading,
       }}

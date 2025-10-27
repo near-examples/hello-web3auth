@@ -15,6 +15,7 @@ export const NearContext = createContext({
   provider: undefined,
   loading: Boolean,
   login: async () => {},
+  loginWithJWT: async (idToken, email) => {},
   logout: async () => {},
 })
 

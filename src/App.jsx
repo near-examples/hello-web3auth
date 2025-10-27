@@ -5,6 +5,8 @@ import HelloNear from './pages/hello_near'
 import { BrowserRouter, HashRouter, Routes, Route } from 'react-router'
 
 import { NEARxWeb3Auth } from './context/provider'
+import { Web3AuthProvider } from '@web3auth/modal-react-hooks'
+import web3AuthContextConfig from './web3authContext'
 
 function App() {
   // Use HashRouter when deployed under a subpath (GitHub Pages)
@@ -12,6 +14,7 @@ function App() {
   const Router = useHashRouter ? HashRouter : BrowserRouter
 
   return (
+   <Web3AuthProvider config={web3AuthContextConfig}>
     <NEARxWeb3Auth>
       <Router>
         <Navigation />
@@ -21,6 +24,7 @@ function App() {
         </Routes>
       </Router>
     </NEARxWeb3Auth>
+    </Web3AuthProvider>
   )
 }
 
