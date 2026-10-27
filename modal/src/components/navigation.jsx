@@ -5,8 +5,8 @@ import { Link } from 'react-router'
 import styles from '@/styles/app.module.css'
 
 import { useNEARxWeb3Auth } from '../context/useNear'
-import { useWeb3Auth } from '@web3auth/modal-react-hooks'
-import { NEAR } from '@near-js/tokens'
+import { useWeb3Auth, useWeb3AuthConnect, useWeb3AuthDisconnect, useWeb3AuthUser } from '@web3auth/modal/react'
+import { NEAR } from 'near-api-js/tokens'
 
 export const Navigation = () => {
   const [action, setAction] = useState(() => {})
@@ -14,7 +14,10 @@ export const Navigation = () => {
   const [balance, setBalance] = useState(0)
   
   // Web3Auth Modal for easy login UI
-  const { connect, logout, isConnected, userInfo } = useWeb3Auth()
+  const { isConnected } = useWeb3Auth()
+  const { connect } = useWeb3AuthConnect()
+  const { disconnect: logout } = useWeb3AuthDisconnect()
+  const { userInfo } = useWeb3AuthUser()
   
   // MPC Core Kit for NEAR transaction signing
   const { walletId, nearAccount, loading } = useNEARxWeb3Auth()

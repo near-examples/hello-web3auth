@@ -3,7 +3,7 @@ import Home from './pages/home'
 
 import HelloNear from './pages/hello_near'
 import { BrowserRouter, HashRouter, Routes, Route } from 'react-router'
-import { Web3AuthProvider } from "@web3auth/modal-react-hooks";
+import { Web3AuthProvider } from "@web3auth/modal/react";
 
 import { NEARxWeb3Auth } from './context/provider'
 import { web3AuthContextConfig } from './config';

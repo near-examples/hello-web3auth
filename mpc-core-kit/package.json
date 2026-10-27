@@ -1,5 +1,5 @@
 {
-  "name": "hello-privy",
+  "name": "hello-web3auth-mpc-core-kit",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -7,25 +7,23 @@
     "build": "vite build",
     "lint:fix": "eslint --fix src",
     "prettier:fix": "prettier --write .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@near-js/accounts": "^2.3.1",
-    "@near-js/crypto": "^2.3.1",
-    "@near-js/providers": "^2.3.1",
-    "@near-js/tokens": "^2.2.5",
-    "@near-js/transactions": "^2.3.1",
     "@noble/hashes": "^1.8.0",
     "@scure/base": "^1.2.6",
     "@toruslabs/tss-dkls-lib": "^4.1.0",
     "@toruslabs/tss-frost-lib": "^1.0.0",
-    "@web3auth/mpc-core-kit": "^3.5.0",
+    "@web3auth/mpc-core-kit": "^3.6.0",
     "bootstrap": "^5",
     "bootstrap-icons": "^1.11.3",
     "react": "^18",
     "react-dom": "^18",
     "react-router": "^7",
-    "react-router-dom": "^7.9.1"
+    "react-router-dom": "^7.9.1",
+    "near-api-js": "^7.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -40,5 +38,9 @@
     "prettier": "^3.6.2",
     "vite": "^6.3.5",
     "vite-plugin-node-polyfills": "^0.24.0"
-  }
+  },
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "type": "module"
 }

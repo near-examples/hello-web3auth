@@ -1,6 +1,6 @@
 // near api js
-import { JsonRpcProvider } from '@near-js/providers'
-import { Account } from '@near-js/accounts'
+import { JsonRpcProvider } from 'near-api-js'
+import { Account } from 'near-api-js'
 
 // utils
 import { base58 } from '@scure/base'
@@ -10,10 +10,10 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { NearContext } from './useNear'
 import { providerUrl } from '../config'
-import { useWeb3Auth } from '@web3auth/modal-react-hooks'
-import { KeyPair } from '@near-js/crypto'
-import { KeyPairSigner } from '@near-js/signers'
-import { getED25519Key } from '@web3auth/base-provider'
+import { useWeb3Auth } from '@web3auth/modal/react'
+import { KeyPair } from 'near-api-js'
+import { KeyPairSigner } from 'near-api-js'
+import { getED25519Key } from '@web3auth/modal'
 
 // Provider
 const provider = new JsonRpcProvider({ url: providerUrl })
@@ -25,7 +25,7 @@ export function NEARxWeb3Auth({ children }) {
   const [loading, setLoading] = useState(true)
   
   // Get Web3Auth Modal state - this provides the authenticated session
-  const { isConnected, authenticateUser, userInfo, provider: web3authProvider } = useWeb3Auth()
+  const { isConnected, provider: web3authProvider } = useWeb3Auth()
 
   // Sync MPC Core Kit with Web3Auth Modal authentication
   useEffect(() => {
@@ -54,7 +54,7 @@ export function NEARxWeb3Auth({ children }) {
     }
 
     syncAuth()
-  }, [isConnected, authenticateUser, userInfo, web3authProvider])
+  }, [isConnected, web3authProvider])
 
   return (
     <NearContext.Provider
