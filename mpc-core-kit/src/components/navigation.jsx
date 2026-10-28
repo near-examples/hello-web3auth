@@ -5,7 +5,7 @@ import { Link } from 'react-router'
 import styles from '@/styles/app.module.css'
 
 import { useNEARxWeb3Auth } from '../context/useNear'
-import { NEAR } from '@near-js/tokens'
+import { NEAR } from 'near-api-js/tokens'
 
 export const Navigation = () => {
   const [action, setAction] = useState(() => {})

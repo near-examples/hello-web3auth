@@ -29,16 +29,16 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Build Vite Site
         run: |
           cd modal
-          npm install
+          npm ci
           npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./modal/dist
 
   # Deployment job
   deploy:

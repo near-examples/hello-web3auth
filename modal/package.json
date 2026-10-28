@@ -1,5 +1,5 @@
 {
-  "name": "hello-privy",
+  "name": "hello-web3auth-modal",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -7,23 +7,16 @@
     "build": "vite build",
     "lint:fix": "eslint --fix src",
     "prettier:fix": "prettier --write .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint src"
   },
   "dependencies": {
-    "@near-js/accounts": "^2.3.1",
-    "@near-js/crypto": "^2.3.1",
-    "@near-js/providers": "^2.3.1",
-    "@near-js/signers": "^2.4.0",
-    "@near-js/tokens": "^2.2.5",
-    "@near-js/transactions": "^2.3.1",
     "@noble/hashes": "^1.8.0",
     "@scure/base": "^1.2.6",
-    "@web3auth/base": "^9.7.0",
-    "@web3auth/base-provider": "^9.7.0",
-    "@web3auth/modal": "^9.7.0",
-    "@web3auth/modal-react-hooks": "^9.7.0",
+    "@web3auth/modal": "^10.16.0",
     "bootstrap": "^5",
     "bootstrap-icons": "^1.11.3",
+    "near-api-js": "^7.4.0",
     "react": "^18",
     "react-dom": "^18",
     "react-router": "^7",
@@ -42,5 +35,9 @@
     "prettier": "^3.6.2",
     "vite": "^6.3.5",
     "vite-plugin-node-polyfills": "^0.24.0"
-  }
+  },
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "type": "module"
 }

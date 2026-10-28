@@ -1,6 +1,6 @@
 // near api js
-import { JsonRpcProvider } from '@near-js/providers'
-import { Account } from '@near-js/accounts'
+import { JsonRpcProvider } from 'near-api-js'
+import { Account } from 'near-api-js'
 
 // utils
 import { base58 } from '@scure/base'
@@ -58,10 +58,7 @@ export function NEARxWeb3Auth({ children }) {
 
       if (coreKitInstance.status === COREKIT_STATUS.LOGGED_IN) {
         const signer = new web3AuthSigner(coreKitInstance)
-        const publicKey = signer
-          .getPublicKey()
-          .toString()
-          .replace('ed25519:', '')
+        const publicKey = (await signer.getPublicKey()).toString().replace('ed25519:', '')
         const walletId = bytesToHex(base58.decode(publicKey))
         const acc = new Account(walletId, provider, signer)
         setWalletId(acc.accountId)

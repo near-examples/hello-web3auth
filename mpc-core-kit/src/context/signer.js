@@ -1,29 +1,19 @@
-import { PublicKey } from "@near-js/crypto"
-import { Signature, SignedTransaction } from "@near-js/transactions"
-import { sha256 } from "@noble/hashes/sha2"
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils"
+import { PublicKey, Signer } from 'near-api-js'
 
-// A Signer class that implements the `Signer` interface from near-api-js
-export class web3AuthSigner {
+// The NEAR SDK serializes and hashes transactions; Core Kit signs those bytes
+// with its threshold Ed25519 key without exporting a private key.
+export class web3AuthSigner extends Signer {
   constructor(coreKitInstance) {
+    super()
     this.coreKitInstance = coreKitInstance
   }
 
-  getPublicKey() {
-    let web3AuthKey = this.coreKitInstance.getPubKeyEd25519()
-    return new PublicKey({ keyType: 0, data: Uint8Array.from(web3AuthKey) })
+  async getPublicKey() {
+    const publicKey = this.coreKitInstance.getPubKeyEd25519()
+    return new PublicKey({ keyType: 0, data: Uint8Array.from(publicKey) })
   }
 
-  async signTransaction(transaction) {
-    const encoded = transaction.encode()
-    const txHash = bytesToHex(sha256(encoded))
-    const signatureRaw = await this.coreKitInstance.sign(
-      hexToBytes(txHash)
-    )
-    const signature = new Signature({
-      keyType: transaction.publicKey.keyType,
-      data: signatureRaw,
-    })
-    return [[], new SignedTransaction({ transaction, signature })]
+  async signBytes(bytes) {
+    return Uint8Array.from(await this.coreKitInstance.sign(bytes))
   }
 }
